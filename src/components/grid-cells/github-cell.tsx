@@ -105,7 +105,7 @@ export function GithubCell() {
     alignX: "left" | "center" | "right";
     below: boolean;
   } | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLAnchorElement>(null);
 
   useEffect(() => {
     fetchContributions()
