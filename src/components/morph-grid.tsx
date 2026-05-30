@@ -315,7 +315,9 @@ export function MorphGrid() {
   const renderSlots: (Slot | null)[] =
     expandIdx >= 0
       ? mobile
-        ? expandMobile(layout.slots, expandIdx)
+        ? (layout.sections[expandIdx].id === "about"
+          ? layout.slots // about auto-sizes its row to the resume; no growth
+          : expandMobile(layout.slots, expandIdx))
         : packAround(layout.slots, expandIdx, layout.cols, layout.rows, 3, 3)
       : layout.slots;
 
@@ -331,7 +333,7 @@ export function MorphGrid() {
           mobile
             ? {
                 gridTemplateColumns: `repeat(${MOBILE_COLS}, 1fr)`,
-                gridAutoRows: "9.5rem",
+                gridAutoRows: "minmax(9.5rem, auto)",
                 gap: GAP + "px",
               }
             : {
