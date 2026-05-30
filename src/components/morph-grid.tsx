@@ -239,11 +239,19 @@ function buildMobileLayout(): { slots: Slot[]; sections: Section[]; rows: number
       row += 1;
     } else {
       const s = block[0];
-      const [, h] = CARD_SHAPE[s.id];
-      const rowSpan = h === 2 ? 2 : 1;
-      slots.push({ col: 1, row, colSpan: MOBILE_COLS, rowSpan });
-      sections.push(s);
-      row += rowSpan;
+      const [w, h] = CARD_SHAPE[s.id];
+      // An unpaired small (1×1) card keeps its square half-width footprint so
+      // its content (e.g. the 3×3 stack puzzle) isn't stretched full-width.
+      if (w === 1 && h === 1) {
+        slots.push({ col: 1, row, colSpan: 1, rowSpan: 1 });
+        sections.push(s);
+        row += 1;
+      } else {
+        const rowSpan = h === 2 ? 2 : 1;
+        slots.push({ col: 1, row, colSpan: MOBILE_COLS, rowSpan });
+        sections.push(s);
+        row += rowSpan;
+      }
     }
   }
 
@@ -350,6 +358,16 @@ export function MorphGrid() {
           if (!slot) return null; // pushed out while a card is expanded
           const isExpanded = expandedId === section.id;
 
+          // On mobile the grid uses auto rows so the expanded résumé card can
+          // grow to fit the PDF exactly. Pin every other cell to a fixed pixel
+          // height (matching its row span) so they never balloon to content.
+          const ROW_UNIT = 152; // 9.5rem
+          const aboutExpanded = mobile && isExpanded && section.id === "about";
+          const cellHeight =
+            mobile && !aboutExpanded
+              ? slot.rowSpan * ROW_UNIT + (slot.rowSpan - 1) * GAP
+              : undefined;
+
           return (
             <motion.div
               key={section.id}
@@ -362,6 +380,7 @@ export function MorphGrid() {
               style={{
                 gridColumn: `${slot.col} / span ${slot.colSpan}`,
                 gridRow: `${slot.row} / span ${slot.rowSpan}`,
+                height: cellHeight,
                 backgroundColor: isDark ? section.bgDark : section.bgLight,
                 border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.07)"}`,
                 boxShadow: isDark
