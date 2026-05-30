@@ -27,12 +27,19 @@ export function AboutCell({ expanded, onToggle }: AboutCellProps) {
   const isDark = resolvedTheme === "dark";
   const [titleIdx, setTitleIdx] = useState(0);
   const pdfWrapRef = useRef<HTMLDivElement>(null);
-  const [pdfScale, setPdfScale] = useState(1);
+  const [pdfScale, setPdfScale] = useState(0); // start at 0 to hide until measured
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     setTitleIdx(Math.floor(Math.random() * TITLES.length));
-    setIsMobile(window.innerWidth < 640);
+    const mobile = window.innerWidth < 640;
+    setIsMobile(mobile);
+    // Immediately compute a usable initial scale for mobile so the first paint
+    // is correct even before ResizeObserver fires.
+    if (mobile) {
+      const approx = window.innerWidth - 32; // rough container width minus padding
+      setPdfScale(approx < PDF_W ? approx / PDF_W : 1);
+    }
   }, []);
 
   // The native PDF viewer ignores fit params on mobile and zooms in. To make
@@ -43,10 +50,12 @@ export function AboutCell({ expanded, onToggle }: AboutCellProps) {
     const el = pdfWrapRef.current;
     if (!el) return;
     const update = () => {
-      const w = el.clientWidth;
+      // clientWidth includes padding; subtract it (px-2 = 8px × 2)
+      const w = el.clientWidth - 16;
       setPdfScale(w < PDF_W ? w / PDF_W : 1);
     };
-    update();
+    // Use rAF to ensure layout is complete on real devices
+    requestAnimationFrame(update);
     const ro = new ResizeObserver(update);
     ro.observe(el);
     return () => ro.disconnect();
@@ -117,7 +126,11 @@ export function AboutCell({ expanded, onToggle }: AboutCellProps) {
           <div
             ref={pdfWrapRef}
             className="relative px-2 pb-2 overflow-hidden"
-            style={{ height: Math.round(PDF_W * PDF_ASPECT * pdfScale) }}
+            style={{
+              height: pdfScale > 0 ? Math.round(PDF_W * PDF_ASPECT * pdfScale) : 0,
+              opacity: pdfScale > 0 ? 1 : 0,
+              transition: "opacity 0.15s ease",
+            }}
           >
             <div
               style={{
