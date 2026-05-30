@@ -1,7 +1,7 @@
 "use client";
 
 import { useTheme } from "next-themes";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 const TITLES = [
   "software engineer, maybe",
@@ -11,11 +11,9 @@ const TITLES = [
 ];
 
 const RESUME_URL = "/resume.pdf";
-
-// Virtual width the PDF iframe is rendered at before being scaled down to fit.
-// A4 page aspect ratio (height / width) used to size the scaled wrapper.
-const PDF_W = 794; // ~ A4 width in px at 96dpi
-const PDF_ASPECT = 1.414;
+// Pre-rendered résumé image — used on mobile where the native PDF viewer
+// ignores fit params and leaves whitespace. An <img> scales perfectly.
+const RESUME_IMG = "/resume.png";
 
 interface AboutCellProps {
   expanded: boolean;
@@ -26,40 +24,12 @@ export function AboutCell({ expanded, onToggle }: AboutCellProps) {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
   const [titleIdx, setTitleIdx] = useState(0);
-  const pdfWrapRef = useRef<HTMLDivElement>(null);
-  const [pdfScale, setPdfScale] = useState(0); // start at 0 to hide until measured
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     setTitleIdx(Math.floor(Math.random() * TITLES.length));
-    const mobile = window.innerWidth < 640;
-    setIsMobile(mobile);
-    // Immediately compute a usable initial scale for mobile so the first paint
-    // is correct even before ResizeObserver fires.
-    if (mobile) {
-      const approx = window.innerWidth - 32; // rough container width minus padding
-      setPdfScale(approx < PDF_W ? approx / PDF_W : 1);
-    }
+    setIsMobile(window.innerWidth < 640);
   }, []);
-
-  // The native PDF viewer ignores fit params on mobile and zooms in. To make
-  // the full page fit, render the iframe at a fixed virtual width (PDF_W) and
-  // scale it down to the container width. On wide screens scale stays 1.
-  useEffect(() => {
-    if (!expanded || !isMobile) return;
-    const el = pdfWrapRef.current;
-    if (!el) return;
-    const update = () => {
-      // clientWidth includes padding; subtract it (px-2 = 8px × 2)
-      const w = el.clientWidth - 16;
-      setPdfScale(w < PDF_W ? w / PDF_W : 1);
-    };
-    // Use rAF to ensure layout is complete on real devices
-    requestAnimationFrame(update);
-    const ro = new ResizeObserver(update);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [expanded, isMobile]);
 
   const base = isDark ? "rgba(255,255,255,0.9)" : "rgba(0,0,0,0.85)";
   const sheen = isDark ? "rgba(255,255,255,0.45)" : "rgba(255,255,255,0.95)";
@@ -123,34 +93,14 @@ export function AboutCell({ expanded, onToggle }: AboutCellProps) {
           </div>
         </div>
         {isMobile ? (
-          <div
-            ref={pdfWrapRef}
-            className="relative px-2 pb-2 overflow-hidden"
-            style={{
-              height: pdfScale > 0 ? Math.round(PDF_W * PDF_ASPECT * pdfScale) : 0,
-              opacity: pdfScale > 0 ? 1 : 0,
-              transition: "opacity 0.15s ease",
-            }}
-          >
-            <div
-              style={{
-                width: PDF_W,
-                height: PDF_W * PDF_ASPECT,
-                transform: `scale(${pdfScale})`,
-                transformOrigin: "top left",
-              }}
-            >
-              <iframe
-                src={`${RESUME_URL}#toolbar=0&navpanes=0&view=FitH`}
-                title="Résumé PDF"
-                className="rounded-lg border-0"
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  backgroundColor: isDark ? "#1a1a1a" : "#fff",
-                }}
-              />
-            </div>
+          <div className="px-2 pb-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={RESUME_IMG}
+              alt="Résumé"
+              className="w-full rounded-lg"
+              style={{ display: "block", backgroundColor: "#fff" }}
+            />
           </div>
         ) : (
           <div className="relative flex-1 min-h-0 px-3 pb-3">
