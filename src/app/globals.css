@@ -44,12 +44,22 @@ body {
   background-attachment: fixed;
 }
 
-/* Lock the page — only opted-in cards scroll internally */
+/* Lock the page on desktop — only opted-in cards scroll internally.
+   On mobile (<640px) unlock body scroll so Safari collapses the address bar. */
 html,
 body {
   height: 100%;
   overflow: hidden;
   overscroll-behavior: none;
+}
+
+@media (max-width: 639px) {
+  html,
+  body {
+    height: auto;
+    overflow: auto;
+    overscroll-behavior: auto;
+  }
 }
 
 .custom-scrollbar::-webkit-scrollbar {
