@@ -89,10 +89,13 @@ export function AboutCell({ expanded, onToggle }: AboutCellProps) {
         </div>
         <div className="relative flex-1 min-h-0 px-2 pb-2 sm:px-3 sm:pb-3">
           <iframe
-            src={`${RESUME_URL}#toolbar=0&navpanes=0&view=FitH`}
+            src={`${RESUME_URL}#toolbar=0&navpanes=0&view=FitW`}
             title="Résumé PDF"
             className="h-full w-full rounded-lg border-0"
-            style={{ backgroundColor: isDark ? "#1a1a1a" : "#fff" }}
+            style={{
+              backgroundColor: isDark ? "#1a1a1a" : "#fff",
+              minHeight: "70vh",
+            }}
           />
         </div>
       </div>

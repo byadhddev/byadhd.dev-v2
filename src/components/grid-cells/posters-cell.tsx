@@ -84,6 +84,11 @@ export function PostersCell({ expanded, onToggle }: PostersCellProps) {
   const [isColorized, setIsColorized] = useState(false);
   const colorCacheRef = useRef<Record<number, string | null>>({});
   const isHoveringRef = useRef(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    setIsMobile(window.innerWidth < 640);
+  }, []);
 
   // Push the active poster's dominant color into shared context (cached).
   useEffect(() => {
@@ -110,10 +115,14 @@ export function PostersCell({ expanded, onToggle }: PostersCellProps) {
       const container = scrollRef.current;
       if (!container) return;
       const next = (activeIndex + 1) % POSTERS.length;
-      container.scrollTo({ top: next * container.clientHeight, behavior: "smooth" });
+      if (isMobile) {
+        container.scrollTo({ left: next * container.clientWidth, behavior: "smooth" });
+      } else {
+        container.scrollTo({ top: next * container.clientHeight, behavior: "smooth" });
+      }
     }, 15000);
     return () => clearInterval(id);
-  }, [activeIndex]);
+  }, [activeIndex, isMobile]);
 
   const handleMouseEnter = useCallback(() => {
     isHoveringRef.current = true;
@@ -136,20 +145,34 @@ export function PostersCell({ expanded, onToggle }: PostersCellProps) {
     const container = scrollRef.current;
     if (!container) return;
     e.preventDefault();
-    const scrollAmount = container.clientHeight;
-    if (e.deltaY > 0) {
-      container.scrollBy({ top: scrollAmount, behavior: "smooth" });
+    if (isMobile) {
+      const scrollAmount = container.clientWidth;
+      if (e.deltaY > 0 || e.deltaX > 0) {
+        container.scrollBy({ left: scrollAmount, behavior: "smooth" });
+      } else {
+        container.scrollBy({ left: -scrollAmount, behavior: "smooth" });
+      }
     } else {
-      container.scrollBy({ top: -scrollAmount, behavior: "smooth" });
+      const scrollAmount = container.clientHeight;
+      if (e.deltaY > 0) {
+        container.scrollBy({ top: scrollAmount, behavior: "smooth" });
+      } else {
+        container.scrollBy({ top: -scrollAmount, behavior: "smooth" });
+      }
     }
-  }, []);
+  }, [isMobile]);
 
   const handleScroll = useCallback(() => {
     const container = scrollRef.current;
     if (!container) return;
-    const index = Math.round(container.scrollTop / container.clientHeight);
-    setActiveIndex(index);
-  }, []);
+    if (isMobile) {
+      const index = Math.round(container.scrollLeft / container.clientWidth);
+      setActiveIndex(index);
+    } else {
+      const index = Math.round(container.scrollTop / container.clientHeight);
+      setActiveIndex(index);
+    }
+  }, [isMobile]);
 
   return (
     <div
@@ -173,7 +196,11 @@ export function PostersCell({ expanded, onToggle }: PostersCellProps) {
         ref={scrollRef}
         onWheel={handleWheel}
         onScroll={handleScroll}
-        className="h-full overflow-y-auto snap-y snap-mandatory transition-[filter,opacity] duration-500"
+        className={`h-full transition-[filter,opacity] duration-500 ${
+          isMobile
+            ? "overflow-x-auto snap-x snap-mandatory flex flex-row"
+            : "overflow-y-auto snap-y snap-mandatory"
+        }`}
         style={{
           scrollbarWidth: "none",
           backgroundColor: isDark ? "rgba(0,0,0,0.2)" : "rgba(0,0,0,0.03)",
@@ -182,7 +209,7 @@ export function PostersCell({ expanded, onToggle }: PostersCellProps) {
         }}
       >
         {POSTERS.map((src, i) => (
-          <div key={i} className="relative h-full w-full snap-center shrink-0">
+          <div key={i} className={`relative snap-center shrink-0 ${isMobile ? "h-full w-full" : "h-full w-full"}`}>
             <Image
               src={src}
               alt={`Poster ${i + 1}`}
@@ -204,7 +231,11 @@ export function PostersCell({ expanded, onToggle }: PostersCellProps) {
             onClick={() => {
               const container = scrollRef.current;
               if (container) {
-                container.scrollTo({ top: i * container.clientHeight, behavior: "smooth" });
+                if (isMobile) {
+                  container.scrollTo({ left: i * container.clientWidth, behavior: "smooth" });
+                } else {
+                  container.scrollTo({ top: i * container.clientHeight, behavior: "smooth" });
+                }
               }
             }}
             className="w-1 h-1 rounded-full transition-all duration-300"

@@ -198,7 +198,7 @@ function packAround(
 }
 
 const MOBILE_COLS = 2;
-const MOBILE_EXPAND_ROWSPAN = 4;
+const MOBILE_EXPAND_ROWSPAN = 5;
 
 // Build the mobile stack. Small 1×1 cards are paired up so two share a row
 // (one per column); every larger card takes a full-width row. Pairs and
