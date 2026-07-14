@@ -13,7 +13,7 @@ import { TriedCell } from "@/components/grid-cells/tried-cell";
 import { ConnectCell } from "@/components/grid-cells/connect-cell";
 import { YoutubeCell } from "@/components/grid-cells/youtube-cell";
 import { GithubCell } from "@/components/grid-cells/github-cell";
-import { ReadingCell } from "@/components/grid-cells/reading-cell";
+import { WritingCell } from "@/components/grid-cells/writing-cell";
 import { GuestbookCell } from "@/components/grid-cells/guestbook-cell";
 import { PosterColorProvider } from "@/components/poster-color-context";
 
@@ -46,14 +46,14 @@ const SECTIONS: Section[] = [
   { id: "connect", label: "Connect", bgDark: "#191919", bgLight: "#ededed" },
   { id: "youtube", label: "YouTube", bgDark: "#151515", bgLight: "#f0f0f0" },
   { id: "github", label: "GitHub", bgDark: "#171717", bgLight: "#eaeaea" },
-  { id: "reading", label: "Bookshelf", bgDark: "#161616", bgLight: "#eaeaea" },
+  { id: "writing", label: "Writings", bgDark: "#161616", bgLight: "#eaeaea" },
   { id: "guestbook", label: "Guestbook", bgDark: "#141414", bgLight: "#ededed" },
 ];
 
 // Every card has a fixed, content-appropriate footprint [colSpan, rowSpan] so
 // its shape stays identical across refreshes. Only its position changes.
 //   2×2  square feature blocks   → youtube (16:9 video), about (name + bio)
-//   1×2  tall columns            → posters (portrait), guestbook (feed), reading (book list)
+//   1×2  tall columns            → posters (portrait), guestbook (feed), writing (article link)
 //   2×1  wide strips             → projects (name + tag rows), connect (icon row), github (graph)
 //   1×1  square minis            → stack (3×3 puzzle), tried, experience, now
 const CARD_SHAPE: Record<string, [number, number]> = {
@@ -61,7 +61,7 @@ const CARD_SHAPE: Record<string, [number, number]> = {
   about: [2, 2],
   posters: [1, 2],
   guestbook: [1, 2],
-  reading: [1, 2],
+  writing: [1, 2],
   projects: [2, 1],
   connect: [2, 1],
   github: [2, 1],
@@ -420,7 +420,7 @@ export function MorphGrid() {
                 />
               )}
               {section.id === "github" && <GithubCell />}
-              {section.id === "reading" && <ReadingCell />}
+              {section.id === "writing" && <WritingCell />}
               {section.id === "guestbook" && <GuestbookCell />}
             </motion.div>
           );

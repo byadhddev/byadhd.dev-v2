@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { MorphGrid } from "@/components/morph-grid";
 
 export default function Home() {
@@ -51,6 +52,12 @@ export default function Home() {
         <p>
           DeFi, ethical hacking, smart contracts, blockchain, poster design,
           motion design, e-governance, AI red teaming, and freelancing.
+        </p>
+
+        <h2>Writings</h2>
+        <p>
+          <Link href="/writings">Read my field notes</Link> on application security,
+          smart-contract audits, building software, and life.
         </p>
 
         <h2>Links</h2>
